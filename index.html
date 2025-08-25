@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Malla Curricular Interactiva — (Coloca aquí el nombre de la carrera)</title>
+<style>
+  :root{
+    --bg: #f7f9fc;
+    --card: #ffffff;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --brand: #5b8def;
+    --ok: #22c55e;
+    --lock: #94a3b8;
+    --chip: #e8efff;
+    --chip-req: #ffe8e8;
+    --soft: 16px;
+  }
+  html,body{margin:0;height:100%;font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial; color:var(--ink); background:var(--bg);} 
+  .wrap{max-width:1200px;margin:0 auto;padding:24px;}
+  header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
+  header h1{font-size:clamp(20px,3.5vw,28px);margin:0;letter-spacing:.2px}
+  header .controls{display:flex;gap:8px;flex-wrap:wrap}
+  .controls input[type="text"]{padding:10px 12px;border:1px solid #d1d5db;border-radius:12px;background:#fff;min-width:260px}
+  .btn{border:0;background:var(--brand);color:#fff;padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600}
+  .btn.secondary{background:#e5e7eb;color:#111}
+  .legend{display:flex;gap:14px;align-items:center;font-size:14px;color:var(--muted);margin:8px 0 20px}
+  .legend .dot{width:10px;height:10px;border-radius:999px;display:inline-block;margin-right:6px}
+  .grid{display:grid;grid-template-columns:repeat(4, minmax(240px,1fr));gap:16px}
+  @media (max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(260px,1fr));}}
+  @media (max-width:640px){.grid{grid-template-columns:1fr}}
+
+  .period{background:transparent;border-radius:20px;display:flex;flex-direction:column;gap:10px}
+  .period h2{margin:0;font-size:18px;color:#0f172a;display:flex;align-items:center;gap:8px}
+  .pill{font-size:12px;background:var(--chip);color:#2643a3;padding:6px 10px;border-radius:999px;font-weight:700;letter-spacing:.3px}
+
+  .course{position:relative;background:var(--card);border:1px solid #e5e7eb;border-radius:20px;padding:14px 14px 12px;box-shadow:0 1px 0 rgba(0,0,0,.03);display:flex;flex-direction:column;gap:10px;transition:transform .05s ease, box-shadow .15s ease, border-color .2s}
+  .course:hover{box-shadow:0 6px 20px rgba(18,54,115,.08)}
+  .course[data-locked="true"]{opacity:.85;border-style:dashed;border-color:#e2e8f0}
+  .course[data-locked="true"] .title{color:#0f172a}
+  .title{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .title .code{font-weight:800;letter-spacing:.2px}
+  .title .name{font-weight:700}
+  .reqs{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:12px;padding:4px 8px;border-radius:999px;background:var(--chip);}
+  .chip.req{background:var(--chip-req)}
+  .state{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .state .lock, .state .ok{display:inline-flex;align-items:center;gap:6px;font-size:12px;border-radius:999px;padding:4px 8px}
+  .state .ok{background:#ecfdf5;color:#065f46}
+  .state .lock{background:#f1f5f9;color:#334155}
+  .course input[type="checkbox"]{appearance:none;width:22px;height:22px;border-radius:8px;border:2px solid #cbd5e1;display:grid;place-items:center;cursor:pointer}
+  .course input[type="checkbox"]:checked{background:var(--ok);border-color:var(--ok)}
+  .course input[type="checkbox"]:checked::after{content:"✓";color:#fff;font-weight:900;font-size:14px}
+  .course[data-locked="true"] input[type="checkbox"]{cursor:not-allowed;opacity:.5}
+
+  /* Tooltip (for locked) */
+  .course[data-locked="true"][data-tooltip]:hover::after{
+    content: attr(data-tooltip);
+    position:absolute;left:10px;right:10px;bottom:100%;transform:translateY(-8px);
+    background:#111827;color:#fff;font-size:12px;line-height:1.4;padding:10px 12px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.2);white-space:pre-wrap}
+  .course[data-locked="true"]::before{content:"";position:absolute;inset:0;border-radius:20px;box-shadow:inset 0 0 0 2px rgba(148,163,184,.35);pointer-events:none}
+
+  footer{margin-top:28px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>📘 Malla Curricular — <span id="careerName">(Coloca aquí el nombre de la carrera)</span></h1>
+      <div class="controls">
+        <input id="careerInput" type="text" placeholder="Nombre de la carrera" />
+        <button class="btn" id="applyCareer">Aplicar nombre</button>
+        <button class="btn secondary" id="resetBtn" title="Borrar progreso guardado">Reiniciar progreso</button>
+      </div>
+    </header>
+
+    <div class="legend">
+      <span><span class="dot" style="background:var(--ok)"></span> Aprobada</span>
+      <span><span class="dot" style="background:#e5e7eb"></span> Disponible</span>
+      <span><span class="dot" style="background:var(--lock)"></span> Bloqueada (pase el cursor para ver requisitos)</span>
+    </div>
+
+    <section id="grid" class="grid" aria-live="polite"></section>
+
+    <footer>
+      <p>Todo se guarda automáticamente en tu navegador con <code>localStorage</code>. Este archivo es autónomo (HTML + CSS + JS en uno solo).</p>
+    </footer>
+  </div>
+
+<script>
+(function(){
+  // ======= 1) Definición de la malla =======
+  // Nota: Se corrigieron referencias evidentes a códigos de requisitos para mantener consistencia.
+  // Si deseas cambiarlas, edita el campo "prereqs" por el código correspondiente.
+  const CURRICULUM = [
+    {
+      period: 1,
+      courses: [
+        { id:"93710", code:"93710", name:"Fundamentos de Matemáticas", prereqs:[] },
+        { id:"93702", code:"93702", name:"Pensamiento Lógico I", prereqs:[] },
+        { id:"55501", code:"55501", name:"Metodología de Estudio", prereqs:[] },
+        { id:"55511", code:"55511", name:"Cátedra Mateísta Técnica", prereqs:[] },
+        { id:"56401", code:"56401", name:"Inglés I", prereqs:[] },
+        { id:"82713", code:"82713", name:"Introducción al Hardware", prereqs:[] },
+        { id:"82700", code:"82700", name:"Lógica de Programación", prereqs:[] },
+        { id:"82714", code:"82714", name:"Sistemas Operativos", prereqs:[] },
+      ]
+    },
+    {
+      period: 2,
+      courses: [
+        { id:"93719", code:"93719", name:"Introducción al Cálculo", prereqs:["93710"] },
+        { id:"55502", code:"55502", name:"Metodología de la Investigación", prereqs:["55501"] },
+        { id:"93703", code:"93703", name:"Pensamiento Lógico II", prereqs:["93702"] },
+        { id:"56402", code:"56402", name:"Inglés II", prereqs:["56401"] },
+        { id:"82805", code:"82805", name:"Configuración de Sistemas Informáticos", prereqs:["82714"] },
+        { id:"82945", code:"82945", name:"Fundamentos de Redes", prereqs:["82713"] },
+        { id:"82769", code:"82769", name:"Programación Estructurada", prereqs:["82700"] },
+      ]
+    },
+    {
+      period: 3,
+      courses: [
+        { id:"93711", code:"93711", name:"Álgebra Lineal", prereqs:["93710"] },
+        { id:"82707", code:"82707", name:"Bases de Datos", prereqs:["82769"] },
+        { id:"27060", code:"27060", name:"Electiva I (Técnicos)", prereqs:[] },
+        { id:"69018", code:"69018", name:"Fundamentos de Emprendimiento", prereqs:[] },
+        { id:"82807", code:"82807", name:"Introducción al Modelado", prereqs:["82769"] },
+        { id:"82806", code:"82806", name:"Soporte Técnico", prereqs:["82945"] },
+      ]
+    },
+    {
+      period: 4,
+      courses: [
+        { id:"93712", code:"93712", name:"Cálculo Diferencial e Integral", prereqs:["93719"] },
+        { id:"27062", code:"27062", name:"Electiva II (Técnicos)", prereqs:["27060"] },
+        { id:"69050", code:"69050", name:"Práctica Empresarial Técnico", prereqs:["69018"] },
+        { id:"55901", code:"55901", name:"Constitución Política y Formación Cívica", prereqs:["55511"] },
+        { id:"56405", code:"56405", name:"Inglés Técnico", prereqs:["56402"] },
+        { id:"70001", code:"70001", name:"Opción de Grado Técnico", prereqs:["55502"] },
+        { id:"82771", code:"82771", name:"Programación Orientada a Objetos", prereqs:["82807"] },
+        { id:"82808", code:"82808", name:"Pruebas de Software", prereqs:["82807"] },
+      ]
+    },
+    {
+      period: 5,
+      courses: [
+        { id:"93707", code:"93707", name:"Estadística y Probabilidades", prereqs:[] },
+        { id:"55512", code:"55512", name:"Cátedra Mateísta Tecnológica", prereqs:[] },
+        { id:"82742", code:"82742", name:"Estructura de Datos", prereqs:["93707"] },
+        { id:"82735", code:"82735", name:"Gestión de Base de Datos", prereqs:["93707"] },
+        { id:"82754", code:"82754", name:"Programación en Entornos Web", prereqs:["82771"] },
+        { id:"82236", code:"82236", name:"Seguridad de Aplicaciones", prereqs:[] },
+      ]
+    },
+    {
+      period: 6,
+      courses: [
+        { id:"93714", code:"93714", name:"Cálculo Vectorial", prereqs:[] },
+        { id:"93721", code:"93721", name:"Matemáticas Discretas", prereqs:["93712"] },
+        { id:"27068", code:"27068", name:"Electiva III (Tecnólogo)", prereqs:[] },
+        { id:"55506", code:"55506", name:"Metodología de la Investigación Aplicada", prereqs:[] },
+        { id:"82750", code:"82750", name:"Ingeniería de Software I", prereqs:["82742"] },
+        { id:"61215", code:"61215", name:"Principios de Costos y Presupuestos", prereqs:[] },
+        { id:"82809", code:"82809", name:"Programación para Dispositivos Móviles", prereqs:["82742"] },
+      ]
+    },
+    {
+      period: 7,
+      courses: [
+        { id:"27070", code:"27070", name:"Electiva IV (Tecnólogo)", prereqs:["27068"] },
+        { id:"55912", code:"55912", name:"Ética y Responsabilidad Social", prereqs:["55512"] },
+        { id:"82751", code:"82751", name:"Ingeniería de Software II", prereqs:["82750"] },
+        { id:"82810", code:"82810", name:"Métodos para Análisis de Datos", prereqs:["82742"] },
+        { id:"82747", code:"82747", name:"Modelos de Calidad de Software", prereqs:["82750"] },
+        { id:"82749", code:"82749", name:"Teoría General de Sistemas", prereqs:[] },
+        { id:"70004", code:"70004", name:"Opción de Grado Tecnología", prereqs:["55506"] },
+      ]
+    }
+  ];
+
+  // ======= 2) Estado & almacenamiento =======
+  let careerName = localStorage.getItem('curricula.careerName') || '';
+  const progressKey = () => `curricula.progress::${careerName || 'default'}`;
+  const loadProgress = () => JSON.parse(localStorage.getItem(progressKey())||'{}');
+  const saveProgress = (obj) => localStorage.setItem(progressKey(), JSON.stringify(obj));
+
+  const approved = new Set(Object.entries(loadProgress()).filter(([,v])=>!!v).map(([k])=>k));
+
+  // ======= 3) Render =======
+  const grid = document.getElementById('grid');
+  const careerSpan = document.getElementById('careerName');
+  const careerInput = document.getElementById('careerInput');
+  const applyBtn = document.getElementById('applyCareer');
+  const resetBtn = document.getElementById('resetBtn');
+
+  function courseById(id){
+    for(const p of CURRICULUM){
+      const c = p.courses.find(x=>x.id===id);
+      if(c) return c;
+    }
+    return null;
+  }
+
+  function unmetPrereqs(course){
+    return (course.prereqs||[]).filter(req=>!approved.has(req));
+  }
+
+  function isLocked(course){
+    return unmetPrereqs(course).length>0;
+  }
+
+  function render(){
+    grid.innerHTML = '';
+    CURRICULUM.forEach(({period,courses})=>{
+      const col = document.createElement('div');
+      col.className = 'period';
+      const h2 = document.createElement('h2');
+      h2.innerHTML = `📘 Periodo ${period} <span class="pill">${courses.length} materias</span>`;
+      col.appendChild(h2);
+
+      courses.forEach(c=>{
+        const unmet = unmetPrereqs(c).map(id=>{
+          const cc = courseById(id);
+          return cc ? `${cc.code} – ${cc.name}` : id;
+        });
+        const locked = unmet.length>0;
+        const card = document.createElement('article');
+        card.className = 'course';
+        card.dataset.locked = locked ? 'true' : 'false';
+        if(locked){
+          card.dataset.tooltip = `Bloqueada. Falta aprobar:\n• ${unmet.join('\n• ')}`;
+        } else {
+          card.removeAttribute('data-tooltip');
+        }
+
+        const title = document.createElement('div');
+        title.className = 'title';
+        title.innerHTML = `<div><div class="code">${c.code}</div><div class="name">${c.name}</div></div>`;
+
+        const state = document.createElement('div');
+        state.className = 'state';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.ariaLabel = `Marcar ${c.code} – ${c.name} como aprobada`;
+        checkbox.checked = approved.has(c.id);
+
+        const tag = document.createElement('span');
+        tag.className = locked ? 'lock' : 'ok';
+        tag.innerHTML = locked ? '🔒 Bloqueada' : (checkbox.checked ? '✔️ Aprobada' : '🟢 Disponible');
+
+        state.appendChild(tag);
+        state.appendChild(checkbox);
+
+        const reqs = document.createElement('div');
+        reqs.className = 'reqs';
+        if((c.prereqs||[]).length===0){
+          const chip = document.createElement('span');
+          chip.className='chip';
+          chip.textContent = 'Sin requisitos';
+          reqs.appendChild(chip);
+        } else {
+          c.prereqs.forEach(id=>{
+            const cc = courseById(id);
+            const ok = approved.has(id);
+            const chip = document.createElement('span');
+            chip.className = 'chip ' + (ok? '':'req');
+            chip.textContent = cc ? `${cc.code}` : id;
+            chip.title = cc ? `${cc.code} – ${cc.name}` : id;
+            reqs.appendChild(chip);
+          })
+        }
+
+        // Click/Toggle logic
+        card.addEventListener('click', (e)=>{
+          // no toggle if locked
+          if(isLocked(c)) return;
+          // avoid double toggling when clicking input
+          if(e.target.tagName.toLowerCase() !== 'input'){
+            checkbox.checked = !checkbox.checked;
+          }
+          setApproved(c.id, checkbox.checked);
+        });
+        checkbox.addEventListener('click',(e)=>{
+          e.stopPropagation();
+          if(isLocked(c)){
+            e.preventDefault();
+            return false;
+          }
+          setApproved(c.id, e.target.checked);
+        });
+
+        card.appendChild(title);
+        card.appendChild(reqs);
+        card.appendChild(state);
+        col.appendChild(card);
+      });
+
+      grid.appendChild(col);
+    });
+  }
+
+  function setApproved(id, value){
+    if(value){ approved.add(id); } else { approved.delete(id); }
+    const obj = Object.fromEntries([...approved].map(k=>[k,true]));
+    saveProgress(obj);
+    render();
+  }
+
+  // ======= 4) UI General =======
+  function applyCareerName(name){
+    careerName = name.trim();
+    localStorage.setItem('curricula.careerName', careerName);
+    careerSpan.textContent = careerName || '(Coloca aquí el nombre de la carrera)';
+    careerInput.value = careerName;
+    // Rehidratar progreso del perfil
+    const fresh = loadProgress();
+    approved.clear();
+    Object.entries(fresh).forEach(([k,v])=>{ if(v) approved.add(k); });
+    render();
+  }
+
+  applyBtn.addEventListener('click', ()=> applyCareerName(careerInput.value));
+  resetBtn.addEventListener('click', ()=>{
+    if(confirm('Esto borrará el progreso guardado para esta carrera. ¿Continuar?')){
+      localStorage.removeItem(progressKey());
+      approved.clear();
+      render();
+    }
+  });
+
+  // Inicializar
+  document.addEventListener('DOMContentLoaded', ()=>{
+    if(careerName){
+      careerSpan.textContent = careerName;
+      careerInput.value = careerName;
+    }
+    render();
+  });
+})();
+</script>
+</body>
+</html>
