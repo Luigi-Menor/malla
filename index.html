@@ -1,344 +1,495 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Malla Curricular Interactiva — (Coloca aquí el nombre de la carrera)</title>
-<style>
-  :root{
-    --bg: #f7f9fc;
-    --card: #ffffff;
-    --ink: #1f2937;
-    --muted: #6b7280;
-    --brand: #5b8def;
-    --ok: #22c55e;
-    --lock: #94a3b8;
-    --chip: #e8efff;
-    --chip-req: #ffe8e8;
-    --soft: 16px;
-  }
-  html,body{margin:0;height:100%;font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial; color:var(--ink); background:var(--bg);} 
-  .wrap{max-width:1200px;margin:0 auto;padding:24px;}
-  header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
-  header h1{font-size:clamp(20px,3.5vw,28px);margin:0;letter-spacing:.2px}
-  header .controls{display:flex;gap:8px;flex-wrap:wrap}
-  .controls input[type="text"]{padding:10px 12px;border:1px solid #d1d5db;border-radius:12px;background:#fff;min-width:260px}
-  .btn{border:0;background:var(--brand);color:#fff;padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600}
-  .btn.secondary{background:#e5e7eb;color:#111}
-  .legend{display:flex;gap:14px;align-items:center;font-size:14px;color:var(--muted);margin:8px 0 20px}
-  .legend .dot{width:10px;height:10px;border-radius:999px;display:inline-block;margin-right:6px}
-  .grid{display:grid;grid-template-columns:repeat(4, minmax(240px,1fr));gap:16px}
-  @media (max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(260px,1fr));}}
-  @media (max-width:640px){.grid{grid-template-columns:1fr}}
-
-  .period{background:transparent;border-radius:20px;display:flex;flex-direction:column;gap:10px}
-  .period h2{margin:0;font-size:18px;color:#0f172a;display:flex;align-items:center;gap:8px}
-  .pill{font-size:12px;background:var(--chip);color:#2643a3;padding:6px 10px;border-radius:999px;font-weight:700;letter-spacing:.3px}
-
-  .course{position:relative;background:var(--card);border:1px solid #e5e7eb;border-radius:20px;padding:14px 14px 12px;box-shadow:0 1px 0 rgba(0,0,0,.03);display:flex;flex-direction:column;gap:10px;transition:transform .05s ease, box-shadow .15s ease, border-color .2s}
-  .course:hover{box-shadow:0 6px 20px rgba(18,54,115,.08)}
-  .course[data-locked="true"]{opacity:.85;border-style:dashed;border-color:#e2e8f0}
-  .course[data-locked="true"] .title{color:#0f172a}
-  .title{display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .title .code{font-weight:800;letter-spacing:.2px}
-  .title .name{font-weight:700}
-  .reqs{display:flex;flex-wrap:wrap;gap:6px}
-  .chip{font-size:12px;padding:4px 8px;border-radius:999px;background:var(--chip);}
-  .chip.req{background:var(--chip-req)}
-  .state{display:flex;align-items:center;justify-content:space-between;gap:8px}
-  .state .lock, .state .ok{display:inline-flex;align-items:center;gap:6px;font-size:12px;border-radius:999px;padding:4px 8px}
-  .state .ok{background:#ecfdf5;color:#065f46}
-  .state .lock{background:#f1f5f9;color:#334155}
-  .course input[type="checkbox"]{appearance:none;width:22px;height:22px;border-radius:8px;border:2px solid #cbd5e1;display:grid;place-items:center;cursor:pointer}
-  .course input[type="checkbox"]:checked{background:var(--ok);border-color:var(--ok)}
-  .course input[type="checkbox"]:checked::after{content:"✓";color:#fff;font-weight:900;font-size:14px}
-  .course[data-locked="true"] input[type="checkbox"]{cursor:not-allowed;opacity:.5}
-
-  /* Tooltip (for locked) */
-  .course[data-locked="true"][data-tooltip]:hover::after{
-    content: attr(data-tooltip);
-    position:absolute;left:10px;right:10px;bottom:100%;transform:translateY(-8px);
-    background:#111827;color:#fff;font-size:12px;line-height:1.4;padding:10px 12px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.2);white-space:pre-wrap}
-  .course[data-locked="true"]::before{content:"";position:absolute;inset:0;border-radius:20px;box-shadow:inset 0 0 0 2px rgba(148,163,184,.35);pointer-events:none}
-
-  footer{margin-top:28px;color:var(--muted);font-size:12px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malla Curricular Interactiva</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            margin-bottom: 30px;
+        }
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .controls button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .controls button:hover {
+            background: #45a049;
+        }
+        .controls button.secondary {
+            background: #f44336;
+        }
+        .controls button.secondary:hover {
+            background: #da190b;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 20px;
+        }
+        .periodo {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 320px;
+            min-height: 400px;
+        }
+        .periodo h2 {
+            text-align: center;
+            color: #4CAF50;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .materia {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-weight: 500;
+            position: relative;
+        }
+        .materia:hover:not(.bloqueada) {
+            background: #e8f5e8;
+            border-color: #4CAF50;
+            transform: translateY(-2px);
+        }
+        .materia.aprobada {
+            background: #4CAF50;
+            color: white;
+            text-decoration: line-through;
+            border-color: #2e7d32;
+        }
+        .materia.aprobada:hover {
+            background: #45a049;
+        }
+        .materia.bloqueada {
+            background: #ffebee;
+            color: #c62828;
+            cursor: not-allowed;
+            border-color: #f44336;
+            opacity: 0.7;
+        }
+        .materia.disponible {
+            background: #e3f2fd;
+            border-color: #2196F3;
+        }
+        .tooltip {
+            position: relative;
+            display: block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 250px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -125px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .stats {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .stats-item {
+            display: inline-block;
+            margin: 0 15px;
+        }
+        .stats-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        @media (max-width: 768px) {
+            .container {
+                justify-content: center;
+            }
+            .periodo {
+                width: 100%;
+                max-width: 400px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1>📘 Malla Curricular — <span id="careerName">(Coloca aquí el nombre de la carrera)</span></h1>
-      <div class="controls">
-        <input id="careerInput" type="text" placeholder="Nombre de la carrera" />
-        <button class="btn" id="applyCareer">Aplicar nombre</button>
-        <button class="btn secondary" id="resetBtn" title="Borrar progreso guardado">Reiniciar progreso</button>
-      </div>
-    </header>
 
-    <div class="legend">
-      <span><span class="dot" style="background:var(--ok)"></span> Aprobada</span>
-      <span><span class="dot" style="background:#e5e7eb"></span> Disponible</span>
-      <span><span class="dot" style="background:var(--lock)"></span> Bloqueada (pase el cursor para ver requisitos)</span>
+<h1>Malla Curricular - Carrera de Sistemas</h1>
+
+<div class="stats" id="stats">
+    <div class="stats-item">
+        <div class="stats-number" id="aprobadas">0</div>
+        <div>Aprobadas</div>
     </div>
+    <div class="stats-item">
+        <div class="stats-number" id="disponibles">8</div>
+        <div>Disponibles</div>
+    </div>
+    <div class="stats-item">
+        <div class="stats-number" id="bloqueadas">0</div>
+        <div>Bloqueadas</div>
+    </div>
+    <div class="stats-item">
+        <div class="stats-number" id="total">47</div>
+        <div>Total</div>
+    </div>
+</div>
 
-    <section id="grid" class="grid" aria-live="polite"></section>
+<div class="controls">
+    <button onclick="resetProgress()">Reiniciar Progreso</button>
+    <button onclick="exportProgress()" class="secondary">Exportar Progreso</button>
+    <button onclick="importProgress()" class="secondary">Importar Progreso</button>
+</div>
 
-    <footer>
-      <p>Todo se guarda automáticamente en tu navegador con <code>localStorage</code>. Este archivo es autónomo (HTML + CSS + JS en uno solo).</p>
-    </footer>
-  </div>
+<div class="container">
+    <div class="periodo">
+        <h2>Periodo 1</h2>
+        <div class="materia disponible" data-id="93710">93710 – Fundamentos de Matemáticas</div>
+        <div class="materia disponible" data-id="93702">93702 – Pensamiento Lógico I</div>
+        <div class="materia disponible" data-id="55501">55501 – Metodología de Estudio</div>
+        <div class="materia disponible" data-id="55511">55511 – Cátedra Mateísta Técnica</div>
+        <div class="materia disponible" data-id="56401">56401 – Inglés I</div>
+        <div class="materia disponible" data-id="82713">82713 – Introducción al Hardware</div>
+        <div class="materia disponible" data-id="82700">82700 – Lógica de Programación</div>
+        <div class="materia disponible" data-id="82714">82714 – Sistemas Operativos</div>
+    </div>
+    <div class="periodo">
+        <h2>Periodo 2</h2>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="93719" data-requirements="93710">93719 – Introducción al Cálculo</div>
+            <span class="tooltiptext">Requisito: 93710 (Fundamentos de Matemáticas)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="55502" data-requirements="55501">55502 – Metodología de la Investigación</div>
+            <span class="tooltiptext">Requisito: 55501 (Metodología de Estudio)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="93703" data-requirements="93702">93703 – Pensamiento Lógico II</div>
+            <span class="tooltiptext">Requisito: 93702 (Pensamiento Lógico I)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="56402" data-requirements="56401">56402 – Inglés II</div>
+            <span class="tooltiptext">Requisito: 56401 (Inglés I)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="82805" data-requirements="82714">82805 – Configuración de Sistemas Informáticos</div>
+            <span class="tooltiptext">Requisito: 82714 (Sistemas Operativos)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="82945" data-requirements="82713">82945 – Fundamentos de Redes</div>
+            <span class="tooltiptext">Requisito: 82713 (Introducción al Hardware)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="82769" data-requirements="82700">82769 – Programación Estructurada</div>
+            <span class="tooltiptext">Requisito: 82700 (Lógica de Programación)</span>
+        </div>
+    </div>
+    <div class="periodo">
+        <h2>Periodo 3</h2>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="93711" data-requirements="93710">93711 – Álgebra Lineal</div>
+            <span class="tooltiptext">Requisito: 93710 (Fundamentos de Matemáticas)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="82707" data-requirements="82769">82707 – Bases de Datos</div>
+            <span class="tooltiptext">Requisito: 82769 (Programación Estructurada)</span>
+        </div>
+        <div class="materia disponible" data-id="27060">27060 – Electiva I (Técnicos)</div>
+        <div class="materia disponible" data-id="69018">69018 – Fundamentos de Emprendimiento</div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="82807" data-requirements="82769">82807 – Introducción al Modelado</div>
+            <span class="tooltiptext">Requisito: 82769 (Programación Estructurada)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="82806" data-requirements="82945">82806 – Soporte Técnico</div>
+            <span class="tooltiptext">Requisito: 82945 (Fundamentos de Redes)</span>
+        </div>
+    </div>
+    <div class="periodo">
+        <h2>Periodo 4</h2>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="93712" data-requirements="93719">93712 – Cálculo Diferencial e Integral</div>
+            <span class="tooltiptext">Requisito: 93719 (Introducción al Cálculo)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="27062" data-requirements="27060">27062 – Electiva II (Técnicos)</div>
+            <span class="tooltiptext">Requisito: 27060 (Electiva I)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="69050" data-requirements="69018">69050 – Práctica Empresarial Técnico</div>
+            <span class="tooltiptext">Requisito: 69018 (Fundamentos de Emprendimiento)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="55901" data-requirements="55511">55901 – Constitución Política y Formación Cívica</div>
+            <span class="tooltiptext">Requisito: 55511 (Cátedra Mateísta Técnica)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="56405" data-requirements="56402">56405 – Inglés Técnico</div>
+            <span class="tooltiptext">Requisito: 56402 (Inglés II)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="70001" data-requirements="55502">70001 – Opción de Grado Técnico</div>
+            <span class="tooltiptext">Requisito: 55502 (Metodología de la Investigación)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="82771" data-requirements="82807">82771 – Programación Orientada a Objetos</div>
+            <span class="tooltiptext">Requisito: 82807 (Introducción al Modelado)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="82808" data-requirements="82807">82808 – Pruebas de Software</div>
+            <span class="tooltiptext">Requisito: 82807 (Introducción al Modelado)</span>
+        </div>
+    </div>
+    <div class="periodo">
+        <h2>Periodo 5</h2>
+        <div class="materia disponible" data-id="93707">93707 – Estadística y Probabilidades</div>
+        <div class="materia disponible" data-id="55512">55512 – Cátedra Mateísta Tecnológica</div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="82742" data-requirements="82707">82742 – Estructura de Datos</div>
+            <span class="tooltiptext">Requisito: 82707 (Bases de Datos)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="82735" data-requirements="82707">82735 – Gestión de Base de Datos</div>
+            <span class="tooltiptext">Requisito: 82707 (Bases de Datos)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="82754" data-requirements="82771">82754 – Programación en Entornos Web</div>
+            <span class="tooltiptext">Requisito: 82771 (Programación Orientada a Objetos)</span>
+        </div>
+        <div class="materia disponible" data-id="82236">82236 – Seguridad de Aplicaciones</div>
+    </div>
+    <div class="periodo">
+        <h2>Periodo 6</h2>
+        <div class="materia disponible" data-id="93714">93714 – Cálculo Vectorial</div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="93721" data-requirements="93712">93721 – Matemáticas Discretas</div>
+            <span class="tooltiptext">Requisito: 93712 (Cálculo Diferencial e Integral)</span>
+        </div>
+        <div class="materia disponible" data-id="27068">27068 – Electiva III (Tecnólogo)</div>
+        <div class="materia disponible" data-id="55506">55506 – Metodología de la Investigación Aplicada</div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="82750" data-requirements="82742">82750 – Ingeniería de Software I</div>
+            <span class="tooltiptext">Requisito: 82742 (Estructura de Datos)</span>
+        </div>
+        <div class="materia disponible" data-id="61215">61215 – Principios de Costos y Presupuestos</div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="82809" data-requirements="82742">82809 – Programación para Dispositivos Móviles</div>
+            <span class="tooltiptext">Requisito: 82742 (Estructura de Datos)</span>
+        </div>
+    </div>
+    <div class="periodo">
+        <h2>Periodo 7</h2>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="27070" data-requirements="27068">27070 – Electiva IV (Tecnólogo)</div>
+            <span class="tooltiptext">Requisito: 27068 (Electiva III)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="55912" data-requirements="55512">55912 – Ética y Responsabilidad Social</div>
+            <span class="tooltiptext">Requisito: 55512 (Cátedra Mateísta Tecnológica)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="82751" data-requirements="82750">82751 – Ingeniería de Software II</div>
+            <span class="tooltiptext">Requisito: 82750 (Ingeniería de Software I)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="82810" data-requirements="82742">82810 – Métodos para Análisis de Datos</div>
+            <span class="tooltiptext">Requisito: 82742 (Estructura de Datos)</span>
+        </div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="82747" data-requirements="82750">82747 – Modelos de Calidad de Software</div>
+            <span class="tooltiptext">Requisito: 82750 (Ingeniería de Software I)</span>
+        </div>
+        <div class="materia disponible" data-id="82749">82749 – Teoría General de Sistemas</div>
+        <div class="tooltip">
+            <div class="materia bloqueada" data-id="70004" data-requirements="55506">70004 – Opción de Grado Tecnología</div>
+            <span class="tooltiptext">Requisito: 55506 (Metodología de la Investigación Aplicada)</span>
+        </div>
+    </div>
+</div>
 
 <script>
-(function(){
-  // ======= 1) Definición de la malla =======
-  // Nota: Se corrigieron referencias evidentes a códigos de requisitos para mantener consistencia.
-  // Si deseas cambiarlas, edita el campo "prereqs" por el código correspondiente.
-  const CURRICULUM = [
-    {
-      period: 1,
-      courses: [
-        { id:"93710", code:"93710", name:"Fundamentos de Matemáticas", prereqs:[] },
-        { id:"93702", code:"93702", name:"Pensamiento Lógico I", prereqs:[] },
-        { id:"55501", code:"55501", name:"Metodología de Estudio", prereqs:[] },
-        { id:"55511", code:"55511", name:"Cátedra Mateísta Técnica", prereqs:[] },
-        { id:"56401", code:"56401", name:"Inglés I", prereqs:[] },
-        { id:"82713", code:"82713", name:"Introducción al Hardware", prereqs:[] },
-        { id:"82700", code:"82700", name:"Lógica de Programación", prereqs:[] },
-        { id:"82714", code:"82714", name:"Sistemas Operativos", prereqs:[] },
-      ]
-    },
-    {
-      period: 2,
-      courses: [
-        { id:"93719", code:"93719", name:"Introducción al Cálculo", prereqs:["93710"] },
-        { id:"55502", code:"55502", name:"Metodología de la Investigación", prereqs:["55501"] },
-        { id:"93703", code:"93703", name:"Pensamiento Lógico II", prereqs:["93702"] },
-        { id:"56402", code:"56402", name:"Inglés II", prereqs:["56401"] },
-        { id:"82805", code:"82805", name:"Configuración de Sistemas Informáticos", prereqs:["82714"] },
-        { id:"82945", code:"82945", name:"Fundamentos de Redes", prereqs:["82713"] },
-        { id:"82769", code:"82769", name:"Programación Estructurada", prereqs:["82700"] },
-      ]
-    },
-    {
-      period: 3,
-      courses: [
-        { id:"93711", code:"93711", name:"Álgebra Lineal", prereqs:["93710"] },
-        { id:"82707", code:"82707", name:"Bases de Datos", prereqs:["82769"] },
-        { id:"27060", code:"27060", name:"Electiva I (Técnicos)", prereqs:[] },
-        { id:"69018", code:"69018", name:"Fundamentos de Emprendimiento", prereqs:[] },
-        { id:"82807", code:"82807", name:"Introducción al Modelado", prereqs:["82769"] },
-        { id:"82806", code:"82806", name:"Soporte Técnico", prereqs:["82945"] },
-      ]
-    },
-    {
-      period: 4,
-      courses: [
-        { id:"93712", code:"93712", name:"Cálculo Diferencial e Integral", prereqs:["93719"] },
-        { id:"27062", code:"27062", name:"Electiva II (Técnicos)", prereqs:["27060"] },
-        { id:"69050", code:"69050", name:"Práctica Empresarial Técnico", prereqs:["69018"] },
-        { id:"55901", code:"55901", name:"Constitución Política y Formación Cívica", prereqs:["55511"] },
-        { id:"56405", code:"56405", name:"Inglés Técnico", prereqs:["56402"] },
-        { id:"70001", code:"70001", name:"Opción de Grado Técnico", prereqs:["55502"] },
-        { id:"82771", code:"82771", name:"Programación Orientada a Objetos", prereqs:["82807"] },
-        { id:"82808", code:"82808", name:"Pruebas de Software", prereqs:["82807"] },
-      ]
-    },
-    {
-      period: 5,
-      courses: [
-        { id:"93707", code:"93707", name:"Estadística y Probabilidades", prereqs:[] },
-        { id:"55512", code:"55512", name:"Cátedra Mateísta Tecnológica", prereqs:[] },
-        { id:"82742", code:"82742", name:"Estructura de Datos", prereqs:["93707"] },
-        { id:"82735", code:"82735", name:"Gestión de Base de Datos", prereqs:["93707"] },
-        { id:"82754", code:"82754", name:"Programación en Entornos Web", prereqs:["82771"] },
-        { id:"82236", code:"82236", name:"Seguridad de Aplicaciones", prereqs:[] },
-      ]
-    },
-    {
-      period: 6,
-      courses: [
-        { id:"93714", code:"93714", name:"Cálculo Vectorial", prereqs:[] },
-        { id:"93721", code:"93721", name:"Matemáticas Discretas", prereqs:["93712"] },
-        { id:"27068", code:"27068", name:"Electiva III (Tecnólogo)", prereqs:[] },
-        { id:"55506", code:"55506", name:"Metodología de la Investigación Aplicada", prereqs:[] },
-        { id:"82750", code:"82750", name:"Ingeniería de Software I", prereqs:["82742"] },
-        { id:"61215", code:"61215", name:"Principios de Costos y Presupuestos", prereqs:[] },
-        { id:"82809", code:"82809", name:"Programación para Dispositivos Móviles", prereqs:["82742"] },
-      ]
-    },
-    {
-      period: 7,
-      courses: [
-        { id:"27070", code:"27070", name:"Electiva IV (Tecnólogo)", prereqs:["27068"] },
-        { id:"55912", code:"55912", name:"Ética y Responsabilidad Social", prereqs:["55512"] },
-        { id:"82751", code:"82751", name:"Ingeniería de Software II", prereqs:["82750"] },
-        { id:"82810", code:"82810", name:"Métodos para Análisis de Datos", prereqs:["82742"] },
-        { id:"82747", code:"82747", name:"Modelos de Calidad de Software", prereqs:["82750"] },
-        { id:"82749", code:"82749", name:"Teoría General de Sistemas", prereqs:[] },
-        { id:"70004", code:"70004", name:"Opción de Grado Tecnología", prereqs:["55506"] },
-      ]
+    // Objeto para almacenar el estado en memoria (sin localStorage)
+    let progressData = {};
+
+    // Función para verificar si una materia está aprobada
+    function isApproved(id) {
+        return progressData[id] === true;
     }
-  ];
 
-  // ======= 2) Estado & almacenamiento =======
-  let careerName = localStorage.getItem('curricula.careerName') || '';
-  const progressKey = () => `curricula.progress::${careerName || 'default'}`;
-  const loadProgress = () => JSON.parse(localStorage.getItem(progressKey())||'{}');
-  const saveProgress = (obj) => localStorage.setItem(progressKey(), JSON.stringify(obj));
-
-  const approved = new Set(Object.entries(loadProgress()).filter(([,v])=>!!v).map(([k])=>k));
-
-  // ======= 3) Render =======
-  const grid = document.getElementById('grid');
-  const careerSpan = document.getElementById('careerName');
-  const careerInput = document.getElementById('careerInput');
-  const applyBtn = document.getElementById('applyCareer');
-  const resetBtn = document.getElementById('resetBtn');
-
-  function courseById(id){
-    for(const p of CURRICULUM){
-      const c = p.courses.find(x=>x.id===id);
-      if(c) return c;
+    // Función para verificar si todos los requisitos están aprobados
+    function areRequirementsMet(requirements) {
+        if (!requirements) return true;
+        const reqArray = requirements.split(',');
+        return reqArray.every(req => isApproved(req.trim()));
     }
-    return null;
-  }
 
-  function unmetPrereqs(course){
-    return (course.prereqs||[]).filter(req=>!approved.has(req));
-  }
-
-  function isLocked(course){
-    return unmetPrereqs(course).length>0;
-  }
-
-  function render(){
-    grid.innerHTML = '';
-    CURRICULUM.forEach(({period,courses})=>{
-      const col = document.createElement('div');
-      col.className = 'period';
-      const h2 = document.createElement('h2');
-      h2.innerHTML = `📘 Periodo ${period} <span class="pill">${courses.length} materias</span>`;
-      col.appendChild(h2);
-
-      courses.forEach(c=>{
-        const unmet = unmetPrereqs(c).map(id=>{
-          const cc = courseById(id);
-          return cc ? `${cc.code} – ${cc.name}` : id;
-        });
-        const locked = unmet.length>0;
-        const card = document.createElement('article');
-        card.className = 'course';
-        card.dataset.locked = locked ? 'true' : 'false';
-        if(locked){
-          card.dataset.tooltip = `Bloqueada. Falta aprobar:\n• ${unmet.join('\n• ')}`;
+    // Función para actualizar el estado de una materia
+    function updateMateriaState(materia) {
+        const id = materia.getAttribute('data-id');
+        const requirements = materia.getAttribute('data-requirements');
+        
+        // Limpiar clases existentes
+        materia.classList.remove('aprobada', 'bloqueada', 'disponible');
+        
+        if (isApproved(id)) {
+            materia.classList.add('aprobada');
+        } else if (areRequirementsMet(requirements)) {
+            materia.classList.add('disponible');
         } else {
-          card.removeAttribute('data-tooltip');
+            materia.classList.add('bloqueada');
         }
+    }
 
-        const title = document.createElement('div');
-        title.className = 'title';
-        title.innerHTML = `<div><div class="code">${c.code}</div><div class="name">${c.name}</div></div>`;
+    // Función para actualizar todas las materias
+    function updateAllMaterias() {
+        const materias = document.querySelectorAll('.materia');
+        materias.forEach(updateMateriaState);
+        updateStats();
+    }
 
-        const state = document.createElement('div');
-        state.className = 'state';
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.ariaLabel = `Marcar ${c.code} – ${c.name} como aprobada`;
-        checkbox.checked = approved.has(c.id);
+    // Función para actualizar las estadísticas
+    function updateStats() {
+        const materias = document.querySelectorAll('.materia');
+        let aprobadas = 0;
+        let disponibles = 0;
+        let bloqueadas = 0;
+        
+        materias.forEach(materia => {
+            if (materia.classList.contains('aprobada')) {
+                aprobadas++;
+            } else if (materia.classList.contains('disponible')) {
+                disponibles++;
+            } else if (materia.classList.contains('bloqueada')) {
+                bloqueadas++;
+            }
+        });
+        
+        document.getElementById('aprobadas').textContent = aprobadas;
+        document.getElementById('disponibles').textContent = disponibles;
+        document.getElementById('bloqueadas').textContent = bloqueadas;
+        document.getElementById('total').textContent = materias.length;
+    }
 
-        const tag = document.createElement('span');
-        tag.className = locked ? 'lock' : 'ok';
-        tag.innerHTML = locked ? '🔒 Bloqueada' : (checkbox.checked ? '✔️ Aprobada' : '🟢 Disponible');
-
-        state.appendChild(tag);
-        state.appendChild(checkbox);
-
-        const reqs = document.createElement('div');
-        reqs.className = 'reqs';
-        if((c.prereqs||[]).length===0){
-          const chip = document.createElement('span');
-          chip.className='chip';
-          chip.textContent = 'Sin requisitos';
-          reqs.appendChild(chip);
-        } else {
-          c.prereqs.forEach(id=>{
-            const cc = courseById(id);
-            const ok = approved.has(id);
-            const chip = document.createElement('span');
-            chip.className = 'chip ' + (ok? '':'req');
-            chip.textContent = cc ? `${cc.code}` : id;
-            chip.title = cc ? `${cc.code} – ${cc.name}` : id;
-            reqs.appendChild(chip);
-          })
+    // Función para alternar el estado de aprobación de una materia
+    function toggleMateria(materia) {
+        const id = materia.getAttribute('data-id');
+        const requirements = materia.getAttribute('data-requirements');
+        
+        // Solo permitir cambios si los requisitos están cumplidos
+        if (!materia.classList.contains('bloqueada')) {
+            progressData[id] = !isApproved(id);
+            updateAllMaterias();
         }
+    }
 
-        // Click/Toggle logic
-        card.addEventListener('click', (e)=>{
-          // no toggle if locked
-          if(isLocked(c)) return;
-          // avoid double toggling when clicking input
-          if(e.target.tagName.toLowerCase() !== 'input'){
-            checkbox.checked = !checkbox.checked;
-          }
-          setApproved(c.id, checkbox.checked);
+    // Función para reiniciar el progreso
+    function resetProgress() {
+        if (confirm('¿Estás seguro de que quieres reiniciar todo el progreso?')) {
+            progressData = {};
+            updateAllMaterias();
+        }
+    }
+
+    // Función para exportar progreso
+    function exportProgress() {
+        const dataStr = JSON.stringify(progressData, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'malla_curricular_progreso.json';
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // Función para importar progreso
+    function importProgress() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        progressData = importedData;
+                        updateAllMaterias();
+                        alert('Progreso importado exitosamente');
+                    } catch (error) {
+                        alert('Error al importar el archivo: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        input.click();
+    }
+
+    // Inicialización cuando se carga la página
+    document.addEventListener('DOMContentLoaded', () => {
+        const materias = document.querySelectorAll('.materia');
+
+        // Agregar event listeners a todas las materias
+        materias.forEach(materia => {
+            materia.addEventListener('click', () => {
+                toggleMateria(materia);
+            });
         });
-        checkbox.addEventListener('click',(e)=>{
-          e.stopPropagation();
-          if(isLocked(c)){
-            e.preventDefault();
-            return false;
-          }
-          setApproved(c.id, e.target.checked);
-        });
 
-        card.appendChild(title);
-        card.appendChild(reqs);
-        card.appendChild(state);
-        col.appendChild(card);
-      });
-
-      grid.appendChild(col);
+        // Actualizar estado inicial
+        updateAllMaterias();
     });
-  }
-
-  function setApproved(id, value){
-    if(value){ approved.add(id); } else { approved.delete(id); }
-    const obj = Object.fromEntries([...approved].map(k=>[k,true]));
-    saveProgress(obj);
-    render();
-  }
-
-  // ======= 4) UI General =======
-  function applyCareerName(name){
-    careerName = name.trim();
-    localStorage.setItem('curricula.careerName', careerName);
-    careerSpan.textContent = careerName || '(Coloca aquí el nombre de la carrera)';
-    careerInput.value = careerName;
-    // Rehidratar progreso del perfil
-    const fresh = loadProgress();
-    approved.clear();
-    Object.entries(fresh).forEach(([k,v])=>{ if(v) approved.add(k); });
-    render();
-  }
-
-  applyBtn.addEventListener('click', ()=> applyCareerName(careerInput.value));
-  resetBtn.addEventListener('click', ()=>{
-    if(confirm('Esto borrará el progreso guardado para esta carrera. ¿Continuar?')){
-      localStorage.removeItem(progressKey());
-      approved.clear();
-      render();
-    }
-  });
-
-  // Inicializar
-  document.addEventListener('DOMContentLoaded', ()=>{
-    if(careerName){
-      careerSpan.textContent = careerName;
-      careerInput.value = careerName;
-    }
-    render();
-  });
-})();
 </script>
+
 </body>
 </html>
